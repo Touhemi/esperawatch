@@ -1,0 +1,270 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espera | Dashboard</title>
+
+    <!-- STRENGHTENED CONTENT SECURITY POLICY -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://identity.netlify.com https://cdn.jsdelivr.net; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src 'self' data: https://*.openstreetmap.org https://*.tile.openstreetmap.org;">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.0.0/ol.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --sidebar-bg: #111114;
+            --card-bg: #18181b;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --text-main: #fafafa;
+            --text-muted: #a1a1aa;
+            --border: rgba(255, 255, 255, 0.06);
+            --glass: rgba(18, 18, 21, 0.8);
+        }
+
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+        body {
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- LOGIN OVERLAY --- */
+        #login-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-dark);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-box {
+            width: 400px;
+            background: var(--card-bg);
+            padding: 50px 40px;
+            border-radius: 32px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .login-logo-img {
+            width: 80px; height: 80px;
+            border-radius: 18px;
+            margin-bottom: 24px;
+            background: #222;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+        }
+
+        .sidebar-header {
+            padding: 0 24px 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 20px;
+        }
+
+        .menu-item {
+            padding: 12px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            transition: 0.2s;
+        }
+
+        .menu-item.active {
+            color: var(--text-main);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .submenu {
+            display: none;
+            flex-direction: column;
+            background: rgba(0,0,0,0.2);
+            padding: 5px 0;
+        }
+
+        .submenu.show { display: flex; }
+
+        .sub-item {
+            padding: 10px 16px 10px 48px;
+            font-size: 13px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-container { flex: 1; display: flex; flex-direction: column; }
+
+        .dashboard-header {
+            display: flex;
+            height: 90px;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 30px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .content-body { flex: 1; display: flex; }
+
+        #map { flex: 1; background: #0e0e11; }
+
+        .history-panel {
+            width: 340px;
+            background: var(--sidebar-bg);
+            border-left: 1px solid var(--border);
+            padding: 20px;
+        }
+
+        .btn-locate {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- AUTH OVERLAY -->
+    <div id="login-overlay">
+        <div class="login-box">
+            <div style="width:80px; height:80px; background:#333; border-radius:18px; margin:0 auto 20px;"></div>
+            <h2 class="tr" data-fr="Connexion" data-en="Sign In">Connexion</h2>
+            <p class="tr" style="color:var(--text-muted); margin-bottom:30px;" 
+               data-fr="Accédez à votre tableau de bord Espera." 
+               data-en="Access your Espera dashboard.">Accédez à votre tableau de bord Espera.</p>
+            <button onclick="netlifyIdentity.open()" style="width:100%; padding:16px; background:var(--accent); color:white; border:none; border-radius:14px; font-weight:700; cursor:pointer;">
+                Continuer / Login
+            </button>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">ESPERA</div>
+        <div class="menu-item active">
+            <span class="material-symbols-rounded">grid_view</span>
+            <span class="tr" data-fr="Dashboard" data-en="Dashboard">Dashboard</span>
+        </div>
+        <div class="menu-item" onclick="toggleSettings()">
+            <span class="material-symbols-rounded">settings</span>
+            <span class="tr" data-fr="Paramètres" data-en="Settings">Paramètres</span>
+        </div>
+        <div class="submenu" id="settings-submenu">
+            <div class="sub-item" onclick="setLang('fr')">Français</div>
+            <div class="sub-item" onclick="setLang('en')">English</div>
+            <div class="sub-item" onclick="netlifyIdentity.logout()">Déconnexion</div>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main-container">
+        <div class="dashboard-header">
+            <div>
+                <h1 style="margin:0; font-size:18px;" class="tr" data-fr="Localisation" data-en="Tracking">Localisation</h1>
+                <div style="font-size:12px; color:var(--text-muted);" id="current-address">...</div>
+            </div>
+            <button class="btn-locate" onclick="locateDevice()">
+                <span class="material-symbols-rounded">my_location</span> Localiser
+            </button>
+        </div>
+        <div class="content-body">
+            <div id="map"></div>
+            <div class="history-panel">
+                <div style="color:var(--text-muted); text-align:center; margin-top:50px;">Historique vide</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ol@v10.0.0/dist/ol.js"></script>
+    
+    <script>
+        let map;
+
+        function toggleSettings() { 
+            document.getElementById('settings-submenu').classList.toggle('show'); 
+        }
+
+        function setLang(lang) {
+            document.querySelectorAll('.tr').forEach(el => {
+                const t = el.getAttribute('data-' + lang);
+                if (t) el.innerText = t;
+            });
+            localStorage.setItem('user_lang', lang);
+        }
+
+        function initMap() {
+            if (!map) {
+                map = new ol.Map({
+                    target: 'map',
+                    layers: [new ol.layer.Tile({ source: new ol.source.OSM() })],
+                    view: new ol.View({ center: ol.proj.fromLonLat([10.18, 36.80]), zoom: 6 })
+                });
+                console.log("Map Loaded");
+            }
+        }
+
+        function startApp() {
+            document.getElementById('login-overlay').classList.add('hidden');
+            setTimeout(initMap, 200);
+        }
+
+        // --- IDENTITY LOGIC ---
+        window.onload = () => {
+            netlifyIdentity.init();
+            setLang(localStorage.getItem('user_lang') || 'fr');
+            if (netlifyIdentity.currentUser()) startApp();
+        };
+
+        netlifyIdentity.on('login', () => {
+            netlifyIdentity.close();
+            startApp();
+        });
+
+        netlifyIdentity.on('logout', () => location.reload());
+
+        async function locateDevice() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    const lonlat = [pos.coords.longitude, pos.coords.latitude];
+                    map.getView().animate({ center: ol.proj.fromLonLat(lonlat), zoom: 16 });
+                });
+            }
+        }
+    </script>
+</body>
+</html>
